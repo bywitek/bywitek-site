@@ -1,0 +1,26 @@
+# Redirect all HTTP requests to HTTPS and enable HSTS
+# Place this file in the /dist directory (document root for the site)
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # If we're behind a proxy/load-balancer that sets X-Forwarded-Proto,
+  # use that header to detect HTTP; otherwise check HTTPS environment.
+  RewriteCond %{HTTP:X-Forwarded-Proto} =http [OR]
+  RewriteCond %{HTTPS} !=on
+
+  # Redirect to same host and URI but with https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Enable HSTS for HTTPS responses to force browsers to use HTTPS in future
+  # Only enable in production when HTTPS is fully configured across the site
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>
+
+# Optional: Serve index.html for directories (useful for single-page apps)
+DirectoryIndex index.html
+
+# Optional: Prevent directory listing
+Options -Indexes
